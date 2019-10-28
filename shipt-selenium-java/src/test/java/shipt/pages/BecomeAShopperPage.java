@@ -1,6 +1,5 @@
 package shipt.pages;
 
-import com.frameworkium.core.ui.UITestLifecycle;
 import com.frameworkium.core.ui.annotations.Visible;
 import com.frameworkium.core.ui.pages.BasePage;
 import com.frameworkium.core.ui.pages.PageFactory;

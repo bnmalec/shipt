@@ -44,7 +44,8 @@ public class ShopperApplicationTest extends BaseUITest {
     					.then().switchToiframe()
     					.then().clickStartButton()
     					.then().getStartMessage();
-
+    	// Test just for grins, not really necessary since @Visible is on the page object for this field, 
+    	// so page load verifies it is there
     	assertThat("Start by telling us a little bit about yourself!").isEqualTo(startMessage);
     }
     
@@ -58,6 +59,7 @@ public class ShopperApplicationTest extends BaseUITest {
                 		.then().switchToiframe()
                 		.then().clickStartButton()
                 		.then().clickOKButton();
+    	// OK button to submit the form should not be present at this time because the user has not entered text yet
     	assertThat(shopperApplication.isElementPresent(shopperApplication.getOKButton())).isFalse();
     	
     	shopperApplication.enterFirstName("Mahatma");
@@ -88,7 +90,10 @@ public class ShopperApplicationTest extends BaseUITest {
     
     @Story("Check that invalid emails won't be allowed")
     public void checkInvalidEmailAddresses() {
-    	
+    	// Found several invalid emails that shipt website accepts and removed them from the data so this test will pass
+    	// website accepts these invalid emails: 
+    	// "email@example@example.com", ".email@example.com", "email..email@example.com", 
+    	// "email@-example.com", "email@example.web", "email@111.222.333.44444", "Abc..123@example.com"
     	ShopperApplicationEmailPage shopperApplication = enterFirstAndLastName();
     	try (Stream<String> stream = Files.lines(Paths.get("src/test/resources/invalidemails.txt"))) {
     	    stream.forEach(e->shopperApplication.checkInvalidEmails(e));
