@@ -78,13 +78,25 @@ select A.name as "Product Name", sum(F.qty) as "Quantity" from order_lines F inn
 
 
 5. Write a SQL statement to update the line_total field.
+
 ```
-select P.price * OL.qty as total from order_lines OL inner join store_prices P on P.store_id = OL.store_id where OL.product_id = P.product_id group by OL.id;
+update order_lines OL inner join store_prices P on P.store_id = OL.store_id set line_total = P.price * OL.qty where OL.product_id = P.product_id;
+```
+```
+Query OK, 4 rows affected (0.01 sec)
+Rows matched: 4  Changed: 4  Warnings: 0
+
+MariaDB [interview]> select * from order_lines;
++------+------------+----------+------+------------+
+| id   | product_id | store_id | qty  | line_total |
++------+------------+----------+------+------------+
+|    1 |          1 |        2 |    3 |          6 |
+|    2 |          2 |        1 |   50 |        150 |
+|    3 |          2 |        1 |    1 |          3 |
+|    4 |          3 |        2 |    4 |          8 |
++------+------------+----------+------+------------+
+4 rows in set (0.01 sec)
 ```
  
-```
-update order_lines set line_total = (select * from(select P.price * OL.qty as total from order_lines OL inner join store_prices P on P.store_id = OL.store_id where OL.product_id = P.product_id group by OL.id) as x);
-```
-	> The above statements are not quite right - didn't get this one working yet!
 
 
