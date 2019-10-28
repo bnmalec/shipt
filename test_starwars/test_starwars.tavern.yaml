@@ -1,0 +1,178 @@
+---
+
+test_name: Assert that Obi-Wan Kenobi was in the film A New Hope
+
+includes:
+- !include common.yaml
+
+stages:
+  - name: Get Obi-Wan's url to check against the list of characters in A New Hope
+    request:
+      url: "{BASE_URL:s}/people/?search=Obi-Wan"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        body: 
+          url: results[0].url  # save the url to use in the next step
+  - name: See if Obi-Wan's url is listed as character in A New Hope
+    request:
+      url: "{BASE_URL:s}/films/?search=A New Hope"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:  # use a function that will see if the url saved earlier is in the list of characters
+          function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisons:
+              - jmespath: "results[0].characters"
+                operator: "contains"
+                expected: "{url}"
+
+---
+
+test_name: Assert that the Enterprise is a starship (should fail)
+
+includes:
+- !include common.yaml
+
+stages:
+  - name: Get all starships, then search for the name "Enterprise"
+    request:
+      url: "{BASE_URL:s}/starships/"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:  # use function to search for Enterprise in the list of starships
+        function: test_helpers:search_response_for_item_by_name
+        extra_kwargs:
+          key: "name"
+          name: "Enterprise"
+
+---
+
+test_name: Assert that Chewbacca is a Wookie
+
+includes:
+- !include common.yaml
+
+stages:
+  - name: Search for Chewbacca
+    request:
+      url: "{BASE_URL:s}/people/?search=Chewbacca"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        body: 
+          chewy_species_url: results[0].species[0]  # save the species url to use in the next step
+  - name: Check the species url to verify it is Wookie
+    request:
+      url: "{chewy_species_url}"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        name: Wookiee
+
+---
+
+test_name: Assert that the /starships endpoint returns specified fields 
+# name, model, crew, hyperdrive_rating, pilots, films
+
+includes:
+- !include common.yaml
+
+stages:
+  - name: Check /starships for fields
+    request:
+      url: "{BASE_URL:s}/starships/schema"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:  
+        function: test_helpers:check_starship_keys
+        extra_kwargs:
+          key: "name"
+          key: "model"
+          key: "crew"
+          key: "hyperdrive_testing"
+          key: "pilots"
+          key: "films"
+
+---
+
+test_name: Assert that the /starships count returned is correct by paging through the results 
+
+includes:
+- !include common.yaml
+
+stages:
+  - name: Count the number of results on /starships/?page=1
+    request:
+      url: "{BASE_URL:s}/starships/"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        $ext:
+          function: test_helpers:count_results
+          extra_kwargs:
+            page: "1"
+        body: 
+          next_url_on_page_one: next
+      
+  - name: Navigate to page 2 and count the results there
+    request:
+      url: "{next_url_on_page_one}"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        $ext:
+          function: test_helpers:count_results
+          extra_kwargs:
+            page: "2"
+        body: 
+          next_url_on_page_two: next 
+      
+  - name: Navigate to page 3 and count the results there
+    request:
+      url: "{next_url_on_page_two}"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        $ext:
+          function: test_helpers:count_results
+          extra_kwargs:
+            page: "3"
+        body: 
+          next_url_on_page_three: next 
+
+  - name: Navigate to page 4 and count the results there
+    request:
+      url: "{next_url_on_page_three}"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        $ext:
+          function: test_helpers:count_results
+          extra_kwargs:
+            page: "4"
+
+  - name: Sum the paginated counts and compare to the official count
+    request:
+      url: "{BASE_URL:s}/starships/"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:  
+        function: test_helpers:check_count_against_count_results
+        extra_kwargs:
+          count1: !int "{count_on_page1}"
+          count2: !int "{count_on_page2}"
+          count3: !int "{count_on_page3}"
+          count4: !int "{count_on_page4}"

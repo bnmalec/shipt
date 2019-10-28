@@ -1,0 +1,7 @@
+---
+
+name: common variables
+description: used for testing against api
+
+variables:
+    BASE_URL: "https://swapi.co/api"
