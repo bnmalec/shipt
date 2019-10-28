@@ -39,7 +39,8 @@ select A.name as "Product Name", round(F.price, 2) as "Price" from store_prices 
 
 3. List the products that are not sold in the store id 2.
 
-``` select A.name as "Product Name" from store_prices F right join products A on A.id = F.product_id where A.id not in (select F.product_id from store_prices F where F.store_id = 2);
+``` 
+select A.name as "Product Name" from store_prices F right join products A on A.id = F.product_id where A.id not in (select F.product_id from store_prices F where F.store_id = 2);
 ```
 
 ```
