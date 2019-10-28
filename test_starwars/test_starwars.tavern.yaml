@@ -117,21 +117,21 @@ stages:
       status_code: 200
       save:
         $ext:
-          function: test_helpers:count_results
+          function: test_helpers:count_results #method counts the number of results on page 1
           extra_kwargs:
             page: "1"
         body: 
-          next_url_on_page_one: next
+          next_url_on_page_one: next #get the "next" url so we can navigate to it
       
   - name: Navigate to page 2 and count the results there
     request:
-      url: "{next_url_on_page_one}"
+      url: "{next_url_on_page_one}" #url saved from previous stage
       method: GET
     response:
       status_code: 200
       save:
         $ext:
-          function: test_helpers:count_results
+          function: test_helpers:count_results #count the number of results on page 2
           extra_kwargs:
             page: "2"
         body: 
@@ -163,6 +163,8 @@ stages:
           extra_kwargs:
             page: "4"
 
+  # This stage will sum all the result counts found on each individual page
+  # and assert the sum matches the total count on the page
   - name: Sum the paginated counts and compare to the official count
     request:
       url: "{BASE_URL:s}/starships/"
