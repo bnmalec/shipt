@@ -79,7 +79,7 @@ select A.name as "Product Name", sum(F.qty) as "Quantity" from order_lines F inn
 
 5. Write a SQL statement to update the line_total field.
 ```
-select A.price * F.qty as total from store_prices A, order_lines F where A.product_id = F.product_id and A.store_id = F.store_id;
+select P.price * OL.qty as total from order_lines OL inner join store_prices P on P.store_id = OL.store_id where OL.product_id = P.product_id group by OL.id;
 ```
  
 ```
